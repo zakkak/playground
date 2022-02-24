@@ -1,0 +1,23 @@
+name: Mandrel-Quarkus tests
+
+on: [workflow_dispatch, push]
+
+jobs:
+  pass-fail:
+    name: Pass Fail ${{ matrix.command }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["true", "false"]
+    steps:
+      - run: ${{ matrix.command }}
+
+  pass-fail-report:
+    name: Report
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - pass-fail
+    steps:
+      - run: echo ${{ needs.pass-fail.result }}
