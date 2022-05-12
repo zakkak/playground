@@ -3,7 +3,16 @@ name: Mandrel-Quarkus tests
 on: [workflow_dispatch, push]
 
 jobs:
-  pass-fail:
+  python-test:
+    runs-on: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+      - run: python3.8 --version
+
+pass-fail:
     name: Pass Fail ${{ matrix.command }}
     runs-on: ubuntu-latest
     strategy:
