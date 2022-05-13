@@ -4,7 +4,7 @@ on: [workflow_dispatch, push]
 
 jobs:
   python-test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v2
         with:
