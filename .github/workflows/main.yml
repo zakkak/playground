@@ -1,6 +1,18 @@
 name: Mandrel-Quarkus tests
 
-on: [workflow_dispatch, push]
+on: 
+  workflow_call:    
+    inputs:
+      issue-number:
+        type: string
+        description: 'The issue number to report results to'
+        default: "null"
+  workflow_dispatch:
+    inputs:
+      issue-number:
+        type: string
+        description: 'The issue number to report results to'
+        default: "null"
 
 jobs:
   python-test:
@@ -10,6 +22,8 @@ jobs:
         with:
           python-version: '3.8' # Version range or exact version of a Python version to use, using SemVer's version range syntax
       - run: python --version
+      - run: |
+          echo "MY_INPUT=${{ inputs.issue-number }}" >> $GITHUB_ENV
 
   pass-fail:
     name: Pass Fail ${{ matrix.command }}

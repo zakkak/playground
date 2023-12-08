@@ -1,0 +1,15 @@
+name: Nightly CI
+
+on: [push, workflow_dispatch]
+
+jobs:
+  job-1:
+    name: "Job 1"
+    uses: ./.github/workflows/main.yml
+    with:
+      issue-number: 123
+  job-2:
+    name: "Job 2"
+    uses: ./.github/workflows/main.yml
+    with:
+        issue-number: 123

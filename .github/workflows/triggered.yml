@@ -2,7 +2,7 @@ name: Triggered Workflow
 
 on:
   workflow_run:
-    workflows: ["Mandrel-Quarkus tests"]
+    workflows: ["Mandrel-Quarkus tests", "Nightly CI"]
     types:
       - completed
 
@@ -11,6 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Is MY_INPUT set?
+        shell: bash
+        run: |
+          echo "MY_INPUT: ${{ env.MY_INPUT }}"
+      - name: Is MY_INPUT set?
+        shell: bash
+        run: |
+          echo "MY_INPUT: $MY_INPUT"
       - name: Get Triggering Workflow Run ID
         shell: bash
         run: |
@@ -19,3 +27,7 @@ jobs:
         shell: bash
         run: |
             echo "Triggering Workflow Run Context: ${{ toJson(github.event.workflow_run) }}"
+      - name: Get Triggering Workflow dispatch event
+        shell: bash
+        run: |
+            echo "Triggering Workflow dispatch event: ${{ toJson(github.event.workflow_run.event) }}"
