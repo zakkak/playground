@@ -1,0 +1,62 @@
+name: Mandrel IT
+
+on: 
+  push:
+  pull_request:
+    branches:
+      - main
+
+env:
+  LANG: en_US.UTF-8
+  FAIL_ON_PERF_REGRESSION: false
+  CMD_LONG_TIMEOUT_MS: 180000
+  LONG_GOTO_URL_TIMEOUT_MS: 200000
+
+jobs:
+  gdb-version:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - quarkus-version: '3.17.7'
+            mandrel-version: '23.1.5.0-Final'
+            java-version: '21'
+            os: 'ubuntu-24.04'
+            timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: Karm/mandrel-integration-tests
+          fetch-depth: 1
+          path: ts
+      - name: Install Mandrel Linux
+        run: |
+          wget "https://github.com/graalvm/mandrel/releases/download/mandrel-${{ matrix.mandrel-version }}/mandrel-java${{ matrix.java-version }}-linux-amd64-${{ matrix.mandrel-version }}.tar.gz"
+          tar -xf mandrel-java${{ matrix.java-version }}-linux-amd64-${{ matrix.mandrel-version }}.tar.gz
+          rm *.tar.gz
+          mv $( echo mandrel-java${{ matrix.java-version }}*-*/ ) ${{ github.workspace }}/${{ matrix.java-version }}-${{ matrix.mandrel-version }}
+        shell: bash
+      - name: Install gdb
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gdb
+      - run: gdb --version
+      - name: Linux test
+        timeout-minutes: ${{ matrix.timeout-minutes }}
+        env:
+          MAVEN_OPTS: -Xmx1g
+        run: |
+          export JAVA_HOME=${{ github.workspace }}/${{ matrix.java-version }}-${{ matrix.mandrel-version }}
+          export GRAALVM_HOME="${JAVA_HOME}"
+          export PATH="${JAVA_HOME}/bin:$PATH"
+          if [[ ! -e "${JAVA_HOME}/bin/native-image" ]]; then
+              echo "Cannot find native-image tool. Quitting..."
+              exit 1
+          fi
+          native-image --version
+          pushd ts
+          mkdir -p ~/.m2/
+          echo 0 | sudo tee /proc/sys/kernel/perf_event_paranoid
+          mvn clean verify -Dquarkus.version=${{ matrix.quarkus-version }} -Ptestsuite -Dtest=DebugSymbolsTest#debugSymbolsSmokeGDB
+        shell: bash
